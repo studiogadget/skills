@@ -13,18 +13,19 @@ Basic Playwright Scraper Example
     - python-dotenv
 """
 
-import os
-import sys
 import logging
+import os
 import shutil
+import sys
 from pathlib import Path
-from typing import Optional
+from typing import Any
 
 from dotenv import load_dotenv
 
 # Playwright インポート
 try:
-    from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
+    from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+    from playwright.sync_api import sync_playwright
 except ImportError:
     print("Error: playwright not installed. Run: pip install playwright")
     sys.exit(1)
@@ -37,7 +38,7 @@ logger = logging.getLogger(__name__)
 class PlaywrightScraper:
     """Playwrightベースのスクレイパー基底クラス"""
 
-    def __init__(self, headless: bool = True, timeout_ms: int = 30000, download_dir: Optional[str] = None):
+    def __init__(self, headless: bool = True, timeout_ms: int = 30000, download_dir: str | None = None) -> None:
         """
         初期化。
 
@@ -87,7 +88,7 @@ class PlaywrightScraper:
         login_button_selector: str,
         email: str,
         password: str,
-        wait_selector: Optional[str] = None,
+        wait_selector: str | None = None,
     ) -> bool:
         """
         ログイン処理（汎用）。
@@ -144,7 +145,7 @@ class PlaywrightScraper:
             logger.error("Login failed", exc_info=True)
             raise
 
-    def download_file(self, link_selector: str, expected_filename_pattern: Optional[str] = None) -> Optional[Path]:
+    def download_file(self, link_selector: str, expected_filename_pattern: str | None = None) -> Path | None:
         """
         ファイルダウンロード処理（Playwright標準パターン）。
 
@@ -164,7 +165,7 @@ class PlaywrightScraper:
         """
         downloaded_file = None
 
-        def handle_download(download):
+        def handle_download(download: Any) -> None:
             nonlocal downloaded_file
             downloaded_file = download
             logger.debug(f"Download event received: {download.suggested_filename}")
@@ -196,7 +197,7 @@ class PlaywrightScraper:
             logger.error("Download failed: event not received", exc_info=True)
             raise
         except Exception as e:
-            logger.error(f"Download failed: {str(e)}", exc_info=True)
+            logger.error(f"Download failed: {e!s}", exc_info=True)
             raise RuntimeError(
                 f"Download completion wait failed. Expected file: {expected_filename_pattern or 'unknown'}. Error: {e}"
             ) from e
@@ -225,7 +226,7 @@ class PlaywrightScraper:
             logger.error(f"Failed to get text from {selector}", exc_info=True)
             raise
 
-    def get_attribute(self, selector: str, attr: str) -> Optional[str]:
+    def get_attribute(self, selector: str, attr: str) -> str | None:
         """
         セレクタから属性値を取得。
 
@@ -263,7 +264,7 @@ if __name__ == "__main__":
         scraper.login(
             url="https://example.com/login",  # 実際のログインURLに置き換えてください
             email_selector="#loginId",
-            password_selector="#password",
+            password_selector="#password",  # nosec B106 # noqa: S106 - example selector, not a password
             login_button_selector="button[type='submit']",
             email=EMAIL,
             password=PASSWORD,

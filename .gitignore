@@ -5,3 +5,12 @@ __pycache__/
 .history/
 .github/*
 !.github/skills
+.gitleaks.toml
+.pre-commit-config.yaml
+Makefile
+pyproject.toml
+uv.lock
+scripts/*
+.coverage
+.python-version
+tests/*

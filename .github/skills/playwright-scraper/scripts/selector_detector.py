@@ -10,11 +10,11 @@ Selector Detector - HTMLからセレクタ候補を自動抽出
     python selector_detector.py page.html --keywords login,password,download
 """
 
-import sys
-import json
 import argparse
+import json
+import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any
 
 try:
     from bs4 import BeautifulSoup
@@ -26,7 +26,7 @@ except ImportError:
 class SelectorDetector:
     """HTMLからセレクタを自動検出"""
 
-    def __init__(self, html: str):
+    def __init__(self, html: str) -> None:
         """
         初期化。
 
@@ -34,9 +34,9 @@ class SelectorDetector:
             html: HTMLテキスト
         """
         self.soup = BeautifulSoup(html, "html.parser")
-        self.selectors: Dict[str, Any] = {}
+        self.selectors: dict[str, Any] = {}
 
-    def detect_login_form(self) -> Optional[Dict[str, str]]:
+    def detect_login_form(self) -> dict[str, str] | None:
         """
         ログインフォームのセレクタを検出。
 
@@ -81,7 +81,7 @@ class SelectorDetector:
 
         return login_form if login_form else None
 
-    def detect_download_links(self) -> Optional[List[Dict[str, str]]]:
+    def detect_download_links(self) -> list[dict[str, str]] | None:
         """
         ダウンロードリンクを検出。
 
@@ -113,7 +113,7 @@ class SelectorDetector:
 
         return download_links if download_links else None
 
-    def detect_buttons_by_text(self, text_patterns: List[str]) -> Optional[List[Dict[str, str]]]:
+    def detect_buttons_by_text(self, text_patterns: list[str]) -> list[dict[str, str]] | None:
         """
         テキストパターンでボタンを検出。
 
@@ -136,7 +136,7 @@ class SelectorDetector:
 
         return buttons if buttons else None
 
-    def detect_input_fields(self) -> Optional[List[Dict[str, str]]]:
+    def detect_input_fields(self) -> list[dict[str, str]] | None:
         """
         全入力フィールドを検出。
 
@@ -168,7 +168,7 @@ class SelectorDetector:
 
         return inputs if inputs else None
 
-    def detect_tables(self) -> Optional[List[Dict[str, Any]]]:
+    def detect_tables(self) -> list[dict[str, Any]] | None:
         """
         テーブル構造を検出（ページネーション・データ取得用）。
 
@@ -197,12 +197,12 @@ class SelectorDetector:
 
     def _find_element_by_keywords(
         self,
-        tags: List[str],
-        id_pattern: Optional[List[str]] = None,
-        name_pattern: Optional[List[str]] = None,
-        type_pattern: Optional[List[str]] = None,
-        text_pattern: Optional[List[str]] = None,
-    ):
+        tags: list[str],
+        id_pattern: list[str] | None = None,
+        name_pattern: list[str] | None = None,
+        type_pattern: list[str] | None = None,
+        text_pattern: list[str] | None = None,
+    ) -> Any:
         """複数パターンで要素検出（内部用）"""
         for tag in tags:
             for elem in self.soup.find_all(tag):
@@ -229,7 +229,7 @@ class SelectorDetector:
 
         return None
 
-    def _get_css_selector(self, elem) -> str:
+    def _get_css_selector(self, elem: Any) -> str:
         """
         HTML要素から CSS セレクタを生成。
 
@@ -272,7 +272,7 @@ class SelectorDetector:
         # デフォルト
         return elem.name
 
-    def detect_all(self) -> Dict[str, Any]:
+    def detect_all(self) -> dict[str, Any]:
         """
         全セレクタを一括検出。
 
@@ -310,7 +310,7 @@ class SelectorDetector:
         return result
 
 
-def main():
+def main() -> None:
     """コマンドラインインターフェース"""
     parser = argparse.ArgumentParser(description="HTMLからセレクタ候補を自動抽出")
     parser.add_argument("html_file", help="HTMLファイルパス")
