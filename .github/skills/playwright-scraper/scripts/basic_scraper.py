@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 
 class PlaywrightScraper:
-    """Playwriteベースのスクレイパー基底クラス"""
+    """Playwrightベースのスクレイパー基底クラス"""
 
     def __init__(self, headless: bool = True, timeout_ms: int = 30000, download_dir: Optional[str] = None):
         """
