@@ -11,6 +11,40 @@ import sys
 from pathlib import Path
 
 
+def _remove_base_indent(lines: list[str]) -> list[str]:
+    """Remove base indent from multiline content per YAML spec.
+
+    Determines the indent level from the first non-empty line
+    and removes that indent from all lines while preserving
+    relative indentation.
+
+    Args:
+        lines: List of lines from multiline content
+
+    Returns:
+        List of lines with base indent removed
+    """
+    # Determine base indent from first non-empty line
+    base_indent = None
+    for line in lines:
+        if line.strip():  # Non-empty line
+            base_indent = len(line) - len(line.lstrip())
+            break
+
+    # Remove base indent from all lines
+    if base_indent is not None and base_indent > 0:
+        processed = []
+        for line in lines:
+            if line.strip():  # Non-empty line
+                # Remove base indent, preserve relative indent
+                processed.append(line[base_indent:] if len(line) >= base_indent else line)
+            else:  # Empty line
+                processed.append("")
+        return processed
+
+    return lines
+
+
 def _parse_frontmatter_simple(content: str) -> dict | None:
     """
     Simple YAML-like frontmatter parser (no PyYAML required).
@@ -56,9 +90,14 @@ def _parse_frontmatter_simple(content: str) -> dict | None:
                         break
                     multiline.append(next_line.rstrip())
                     i += 1
+
                 # Remove trailing empty lines
                 while multiline and not multiline[-1].strip():
                     multiline.pop()
+
+                # Apply YAML spec indent removal
+                multiline = _remove_base_indent(multiline)
+
                 value = "\n".join(multiline)
                 i -= 1  # Adjust because loop will increment
             elif value.startswith('"') and value.endswith('"'):
