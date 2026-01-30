@@ -265,7 +265,9 @@ class SelectorDetector:
         # テキストで特定（最後の手段）
         text = elem.get_text(strip=True)[:30]
         if text:
-            return f"{elem.name}:contains('{text}')"
+            # Playwright 推奨の text= セレクタを使用
+            safe_text = text.replace('"', '\\"')
+            return f'{elem.name} >> text="{safe_text}"'
 
         # デフォルト
         return elem.name
