@@ -229,6 +229,8 @@ description: |-
 ```yaml
 description: GitHub Actionsを扱うスキル
 ```
+
+### 2) コンテキスト制限への対応
 （実用性重視）
 GitHub Copilot はコンテキストが限られるため、以下を守ってください。
 
