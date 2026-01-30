@@ -89,13 +89,58 @@ page_limit: 5                     # ページネーション上限
 - [`references/docs_links.md`](references/docs_links.md): 公式ドキュメント・API リファレンス
 - [`references/best_practices.md`](references/best_practices.md): ログイン待機・タイムアウト・リトライの実装パターン
 
+## ダウンロード完了待機のパターン比較
+
+Playwrightでファイルダウンロードを実装する際、完了待機の方法は2つのパターンがあります：
+
+### パターンA: `download.path()` で完了を待機（推奨）
+
+```python
+def handle_download(download):
+    # download.path() はダウンロード完了までブロック
+    file_path = Path(download.path())
+    target_path = self.download_dir / download.suggested_filename
+    shutil.copy2(file_path, target_path)
+    return target_path
+```
+
+**メリット**:
+- Playwright標準パターン
+- ダウンロード完了を確実に待機
+- ファイルが確実に書き込まれたことを保証
+- ユーザーはすぐにファイルを使用可能
+
+**デメリット**: 特になし
+
+### パターンB: `page.wait_for_load_state("networkidle")` で待機
+
+```python
+def handle_download(download):
+    # networkidle は待機するが、download完了を保証しない
+    download.save_as(self.download_dir / download.suggested_filename)
+
+page.on("download", handle_download)
+page.click(link_selector)
+page.wait_for_load_state("networkidle")  # リスク
+```
+
+**メリット**:
+- ネットワーク活動の終了を確認
+
+**デメリット**:
+- ダウンロード完了を保証しない
+- ファイル書き込み完了前に処理が進む可能性
+- race conditionのリスク
+
+**推奨**: パターンA（`download.path()`）を使用してください。basic_scraper.pyはこのパターンで実装されています。
+
 ## チェックリスト
 
 実装完了時に以下を確認:
 
 - [ ] セレクタ判定ロジックが HTML 解析で正しくセレクタを抽出している
 - [ ] ログイン後のページロード完了を明示的に待機している
-- [ ] ダウンロード時にハンドラ登録と待機処理が正しく連動している
+- [ ] ダウンロード時に `download.path()` で完了を確実に待機している
 - [ ] 認証情報を環境変数で管理している（ハードコード禁止）
 - [ ] タイムアウト時に具体的なエラーメッセージを出力している
 - [ ] 構造化ログ（JSON or 標準format）で実行過程を記録している
