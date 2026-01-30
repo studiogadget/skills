@@ -68,7 +68,7 @@ Playwrightを使った**動的Webスクレイピング**実装ガイド。
 
 **入力**:
 ```yaml
-target_url: "https://sec-sso.click-sec.com/loginweb/"
+target_url: "https://example.com/login"
 selectors_file: "config/selectors.json"  # Step 1 の出力
 credentials:
   email: "${GMO_EMAIL}"          # 環境変数参照
