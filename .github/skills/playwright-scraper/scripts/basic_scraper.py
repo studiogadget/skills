@@ -251,8 +251,8 @@ if __name__ == "__main__":
     load_dotenv()
 
     # 設定
-    GMO_EMAIL = os.environ.get("GMO_EMAIL", "your_email@example.com")
-    GMO_PASSWORD = os.environ.get("GMO_PASSWORD", "your_password")
+    EMAIL = os.environ.get("EMAIL", "your_email@example.com")
+    PASSWORD = os.environ.get("PASSWORD", "your_password")
 
     scraper = None
     try:
@@ -266,8 +266,8 @@ if __name__ == "__main__":
             email_selector="#loginId",
             password_selector="#password",
             login_button_selector="button[type='submit']",
-            email=GMO_EMAIL,
-            password=GMO_PASSWORD,
+            email=EMAIL,
+            password=PASSWORD,
             wait_selector=".welcome-message",  # ログイン完了を検証
         )
 

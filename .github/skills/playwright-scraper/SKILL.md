@@ -71,8 +71,8 @@ Playwrightを使った**動的Webスクレイピング**実装ガイド。
 target_url: "https://example.com/login"
 selectors_file: "config/selectors.json"  # Step 1 の出力
 credentials:
-  email: "${GMO_EMAIL}"          # 環境変数参照
-  password: "${GMO_PASSWORD}"
+  email: "${EMAIL}"          # 環境変数参照
+  password: "${PASSWORD}"
 download_dir: "./downloads"
 page_limit: 5                     # ページネーション上限
 ```

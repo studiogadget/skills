@@ -172,11 +172,11 @@ from dotenv import load_dotenv
 
 load_dotenv()  # .env から読み込み
 
-email = os.environ.get("GMO_EMAIL")
-password = os.environ.get("GMO_PASSWORD")
+email = os.environ.get("EMAIL")
+password = os.environ.get("PASSWORD")
 
 if not email or not password:
-    raise EnvironmentError("Missing required environment variables: GMO_EMAIL, GMO_PASSWORD")
+    raise EnvironmentError("Missing required environment variables: EMAIL, PASSWORD")
 
 # パスワードはログに出力しない（マスク化）
 logger.debug(f"Login attempt", extra={"user": email, "masked_pass": "***"})
@@ -184,8 +184,8 @@ logger.debug(f"Login attempt", extra={"user": email, "masked_pass": "***"})
 
 ### .env ファイル（ローカル開発専用）
 ```
-GMO_EMAIL=your_email@example.com
-GMO_PASSWORD=your_password_here
+EMAIL=your_email@example.com
+PASSWORD=your_password_here
 ```
 
 **.gitignore に追加**:
@@ -243,11 +243,11 @@ Pytest でのスクレイピング機能テスト:
 ```python
 # tests/test_scraper.py
 import pytest
-from your_scraper import GMOScraper
+from your_scraper import GenericScraper
 
 @pytest.fixture
 def scraper():
-    return GMOScraper()
+    return GenericScraper()
 
 def test_login_success(scraper):
     """ログイン成功を検証"""

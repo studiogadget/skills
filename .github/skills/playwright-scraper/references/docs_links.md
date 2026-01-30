@@ -45,14 +45,14 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-email = os.environ["GMO_EMAIL"]
-password = os.environ["GMO_PASSWORD"]
+email = os.environ["EMAIL"]
+password = os.environ["PASSWORD"]
 ```
 
 ### .env ファイル（ローカル開発用）
 ```env
-GMO_EMAIL=user@example.com
-GMO_PASSWORD=secure_password_here
+EMAIL=user@example.com
+PASSWORD=secure_password_here
 ```
 
 **注意**: `.env` は `.gitignore` に追加（シークレット情報を含むため）
