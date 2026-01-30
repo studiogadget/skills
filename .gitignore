@@ -2,15 +2,6 @@
 __pycache__/
 .idea/
 .vscode/
-.history/
-.github/*
+# .github/skillsのみ追跡
+*
 !.github/skills
-.gitleaks.toml
-.pre-commit-config.yaml
-Makefile
-pyproject.toml
-uv.lock
-scripts/*
-.coverage
-.python-version
-tests/*
