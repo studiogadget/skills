@@ -205,7 +205,6 @@ from playwright.sync_api import sync_playwright
 with sync_playwright() as p:
     context = p.chromium.launch_persistent_context(
         "./browser_data",
-        ignore_https_errors=True,
         extra_http_headers={
             "User-Agent": "Custom Agent"
         }
