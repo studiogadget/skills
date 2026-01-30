@@ -6,12 +6,11 @@ Basic Playwright Scraper Example
 基本的なスクレイピング例。
 
 使用方法:
-    python basic_scraper.py --config config.yaml
+    python basic_scraper.py
 
 依存:
     - playwright
     - python-dotenv
-    - pyyaml
 """
 
 import os
