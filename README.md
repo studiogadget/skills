@@ -128,7 +128,7 @@ description: |-
 ## スキル一覧
 
 - `.github/skills/skill-creator/`：GitHub Copilot用のスキル（Agent Skills）を新規作成・改修するガイドラインとテンプレート
-- `.github/skills/skill-playwright-scraping/`：Playwrightを使ったWebスクレイピングの実装スキル
+- `.github/skills/playwright-scraper/`：Playwrightを使ったWebスクレイピングの実装スキル
 
 ---
 
