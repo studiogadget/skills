@@ -2,6 +2,6 @@
 __pycache__/
 .idea/
 .vscode/
-.history/
-.github/*
+# .github/skillsのみ追跡
+*
 !.github/skills
