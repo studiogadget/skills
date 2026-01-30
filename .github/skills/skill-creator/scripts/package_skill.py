@@ -14,6 +14,9 @@ import sys
 import zipfile
 from pathlib import Path
 
+# Add the current script's directory to sys.path for relative imports
+sys.path.insert(0, str(Path(__file__).parent))
+
 from quick_validate import validate_skill
 
 
