@@ -69,7 +69,7 @@ download_path.mkdir(exist_ok=True)
 downloaded_file = None
 
 def handle_download(download):
-    global downloaded_file
+    nonlocal downloaded_file
     # ダウンロード完了後のファイルパス
     downloaded_file = download
     download.save_as(download_path / download.suggested_filename)
