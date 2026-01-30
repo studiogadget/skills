@@ -261,7 +261,7 @@ if __name__ == "__main__":
 
         # ログイン
         scraper.login(
-            url="https://sec-sso.click-sec.com/loginweb/",
+            url="https://example.com/login",  # 実際のログインURLに置き換えてください
             email_selector="#loginId",
             password_selector="#password",
             login_button_selector="button[type='submit']",
