@@ -4,6 +4,7 @@ __pycache__/
 .vscode/
 # .github/skills/配下のみ追跡（skill-creator-from-logsを含む）
 *
+!README.md
 !.github/
 .github/*
 !.github/skills/
