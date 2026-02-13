@@ -2,6 +2,10 @@
 __pycache__/
 .idea/
 .vscode/
-# .github/skillsのみ追跡
+# .github/skills/配下のみ追跡（skill-creator-from-logsを含む）
 *
-!.github/skills
+!.github/
+.github/*
+!.github/skills/
+!.github/skills/**/**
+.github/skills/**/__pycache__
