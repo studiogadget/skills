@@ -1,11 +1,7 @@
+# skillsとREADME.mdのみ追跡
 .DS_Store
 __pycache__/
 .idea/
 .vscode/
-# skillsとREADME.mdのみ追跡
-*
-!.gitignore
-!README.md
-!skills/
-!skills/**/**
-skills/**/__pycache__
+.venv/
+.github/
