@@ -4,6 +4,7 @@ __pycache__/
 .vscode/
 # skillsとREADME.mdのみ追跡
 *
+!.gitignore
 !README.md
 !skills/
 !skills/**/**
