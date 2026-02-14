@@ -22,7 +22,9 @@ LLMエージェントで再利用できる「スキル（手順・プロンプ�
 
 ---
 
-## リポジトリ構成（現状）
+## リポジトリ構成（使用時）
+
+スキルを使用する際は `.github/skills/<skill_name>/` に配置して下さい。GitHub Copilot は、このディレクトリ配下をスキルのリポジトリとして認識し、必要に応じて使用します。
 
 ```
 .
@@ -127,10 +129,10 @@ description: |-
 
 ## スキル一覧
 
-- `.github/skills/skill-creator/`：GitHub Copilot用のスキル（Agent Skills）を新規作成・改修するガイドラインとテンプレート
-- `.github/skills/skill-creator-from-logs/`：VS Code / GitHub Copilot Chat の「Chat: Export Chat...」で出力した JSON を解析し、繰り返しワークフロー（WHAT/HOW/FLOW）を発見して Agent Skills を自動生成
-- `.github/skills/playwright-scraper/`：Playwrightを使ったWebスクレイピングの実装スキル
-- `.github/skills/python-readable-code/`：Pythonコードのリーダブルコード原則に基づくレビュー・改善スキル（AI駆動開発時代の「理解速度最大化」を重視）
+- **skill-creator**：GitHub Copilot用のスキル（Agent Skills）を新規作成・改修するガイドラインとテンプレート
+- **skill-creator-from-logs**：VS Code / GitHub Copilot Chat の「Chat: Export Chat...」で出力した JSON を解析し、繰り返しワークフロー（WHAT/HOW/FLOW）を発見して Agent Skills を自動生成
+- **playwright-scraper**：Playwrightを使ったWebスクレイピングの実装スキル
+- **python-readable-code**：Pythonコードのリーダブルコード原則に基づくレビュー・改善スキル（AI駆動開発時代の「理解速度最大化」を重視）
 
 ---
 
@@ -138,7 +140,7 @@ description: |-
 
 PRを歓迎します。最低限、以下を守ってください。
 
-- 新規スキルは `.github/skills/` 以下にフォルダを作成し、SKILL.md を配置（skill-creator のガイドラインに従う）
+- 新規スキルは `skills/` 以下にフォルダを作成し、SKILL.md を配置（skill-creator のガイドラインに従う）
 - SKILL.md は必須
 - 機密情報・個人情報を含めない（ログ・スクショ含む）
 - 既存スキルの変更は **後方互換** を意識（入力形式の破壊的変更は避ける）

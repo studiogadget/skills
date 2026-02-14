@@ -2,11 +2,10 @@
 __pycache__/
 .idea/
 .vscode/
-# .github/skills/配下のみ追跡（skill-creator-from-logsを含む）
+# skillsとREADME.mdのみ追跡
 *
+!.gitignore
 !README.md
-!.github/
-.github/*
-!.github/skills/
-!.github/skills/**/**
-.github/skills/**/__pycache__
+!skills/
+!skills/**/**
+skills/**/__pycache__
