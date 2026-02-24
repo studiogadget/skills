@@ -133,6 +133,7 @@ description: |-
 - **skill-creator-from-logs**：VS Code / GitHub Copilot Chat の「Chat: Export Chat...」で出力した JSON を解析し、繰り返しワークフロー（WHAT/HOW/FLOW）を発見して Agent Skills を自動生成
 - **playwright-scraper**：Playwrightを使ったWebスクレイピングの実装スキル
 - **python-readable-code**：Pythonコードのリーダブルコード原則に基づくレビュー・改善スキル（AI駆動開発時代の「理解速度最大化」を重視）
+- **storage-state**：Playwrightの storage_state.json を管理するスキル（生成スクリプト + 古い場合の警告ロジック）
 
 ---
 
