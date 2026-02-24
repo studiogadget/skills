@@ -173,6 +173,12 @@ def main() -> None:
             input("[待機] ログイン完了後に Enter を押してください...")
         except KeyboardInterrupt:
             logger.warning("storage_state:generate:interrupted")
+            # ユーザーが中断した場合は storage_state.json を保存せずに終了する
+            with suppress(Exception):
+                ctx.close()
+            with suppress(Exception):
+                browser.close()
+            return
 
         ctx.storage_state(path=str(storage_path))
         logger.info("storage_state:generate:done", path=str(storage_path))
