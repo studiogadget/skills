@@ -172,7 +172,7 @@ python .github/skills/skill-creator/scripts/init_skill.py <skill-name> --path .g
   - ✅ 良い例: 「PDFフォームに自動入力する際に使用。フォーム解析→マッピング→入力の3ステップで進める」
   - ❌ 悪い例: 「PDFを扱うスキル」（曖昧すぎて誤発火）
   - 「何をするか」＋「いつ使うか」＋「キーワード」を同じ文で書く
-  - 複数行にする場合は `|-` 記法を使用（YAMLの改行保持）
+  - **単行文字列で記述する**（`|-` などの複数行ブロックスカラーは使わない）
   - 本文に "When to use" を書くより、description を強くする
 - `license`: 必要に応じて追加（省略可）
 - `metadata` / `allowed-tools`: GitHub Copilot では現状未サポート。追加不要
@@ -213,16 +213,19 @@ python .github/skills/skill-creator/scripts/package_skill.py .github/skills/<ski
 ### 1) description の書き方
 GitHub Copilot は description でスキルを選択します。以下を意識してください。
 
-**✅ 良い description の例**:
+**✅ 良い description の例**（単行で記述する）:
 ```yaml
-description: |-
-  GitHub Actionsワークフローを新規作成・修正する際に使用。
-  「CIを追加したい」「ワークフローを最適化したい」という依頼で起動。
-  ワークフロー設計→YAMLテンプレ適用→バリデーションの流れで進める。
+description: GitHub Actionsワークフローを新規作成・修正する際に使用。「CIを追加したい」「ワークフローを最適化したい」という依頼で起動。ワークフロー設計→YAMLテンプレ適用→バリデーションの流れで進める。
 ```
 
 **❌ 悪い description の例**:
 ```yaml
+# 複数行ブロックスカラー（|-）は使わない
+description: |-
+  GitHub Actionsワークフローを新規作成・修正する際に使用。
+  「CIを追加したい」「ワークフローを最適化したい」という依頼で起動。
+
+# 説明が曖昧すぎる
 description: GitHub Actionsを扱うスキル
 ```
 
