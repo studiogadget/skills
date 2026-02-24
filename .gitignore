@@ -13,3 +13,8 @@ __pycache__/
 !playwright-scraper/**/**
 !python-readable-code/
 !python-readable-code/**/**
+
+# 例外設定後も__pycache__を明示的に無視
+__pycache__/
+*.pyc
+*.pyo
