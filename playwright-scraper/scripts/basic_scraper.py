@@ -95,11 +95,16 @@ class PlaywrightScraper:
         Locatorは操作前に自動で要素が操作可能になるまで待機するため、
         `wait_for_selector` による手動待機は不要。
 
+        **フォールバック値の注意**:
+            省略時のフォールバック値（「メールアドレス」「パスワード」「ログイン」）は
+            Webサイトによって異なります。サイト固有のラベルやボタンテキストに合わせて、
+            適切なCSSセレクタを指定してください。
+
         Args:
             url: ログインページURL
-            email_locator: メールアドレス入力フィールドのCSSセレクタ（省略時: get_by_label使用）
-            password_locator: パスワード入力フィールドのCSSセレクタ（省略時: get_by_label使用）
-            login_button_locator: ログインボタンのCSSセレクタ（省略時: get_by_role使用）
+            email_locator: メールアドレス入力フィールドのCSSセレクタ（省略時: get_by_label("メールアドレス")使用）
+            password_locator: パスワード入力フィールドのCSSセレクタ（省略時: get_by_label("パスワード")使用）
+            login_button_locator: ログインボタンのCSSセレクタ（省略時: get_by_role("button", name="ログイン")使用）
             email: ログインメールアドレス（環境変数や引数から）
             password: ログインパスワード（環境変数や引数から）
             success_locator: ログイン完了を検証するCSSセレクタ（省略可）
@@ -116,6 +121,7 @@ class PlaywrightScraper:
             self.page.wait_for_load_state("domcontentloaded")
 
             # メールアドレス入力（Locatorが自動待機）
+            # 注意: フォールバック値「メールアドレス」はWebサイト固有。サイトに合わせて email_locator を指定してください
             email_loc: Locator = (
                 self.page.locator(email_locator) if email_locator else self.page.get_by_label("メールアドレス")
             )
@@ -123,6 +129,7 @@ class PlaywrightScraper:
             email_loc.fill(email)
 
             # パスワード入力（Locatorが自動待機）
+            # 注意: フォールバック値「パスワード」はWebサイト固有。サイトに合わせて password_locator を指定してください
             password_loc: Locator = (
                 self.page.locator(password_locator) if password_locator else self.page.get_by_label("パスワード")
             )
@@ -130,6 +137,7 @@ class PlaywrightScraper:
             password_loc.fill(password)
 
             # ログインボタン クリック（Locatorが自動待機）
+            # 注意: フォールバック値「ログイン」はWebサイト固有。サイトに合わせて login_button_locator を指定してください
             login_btn: Locator = (
                 self.page.locator(login_button_locator)
                 if login_button_locator
@@ -282,6 +290,9 @@ if __name__ == "__main__":
         # ログイン（Locatorベース）
         scraper.login(
             url="https://example.com/login",  # 実際のURLに置き換えてください
+            email_locator='input[name="email"]',
+            password_locator='input[name="password"]',  # noqa: S106 # nosec B106 - CSSセレクタであり実パスワードではない
+            login_button_locator='button[type="submit"]',
             email=EMAIL,
             password=PASSWORD,
             success_locator=".welcome-message",  # ログイン完了を検証

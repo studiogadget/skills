@@ -110,7 +110,7 @@ max_retries = 3
 for attempt in range(max_retries):
     try:
         # Locatorのwait_forでタイムアウト設定
-        page.get_by_css("#login_form").wait_for(state="visible", timeout=5000)
+        page.locator("#login_form").wait_for(state="visible", timeout=5000)
         break
     except PlaywrightTimeoutError:
         if attempt < max_retries - 1:
