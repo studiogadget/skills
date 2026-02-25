@@ -18,7 +18,6 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Any
 
 from dotenv import load_dotenv
 
@@ -168,9 +167,10 @@ class PlaywrightScraper:
         expected_filename_pattern: str | None = None,
     ) -> Path | None:
         """
-        ファイルダウンロード処理（Locator + download.path()パターン）。
+        ファイルダウンロード処理（expect_download()コンテキストマネージャー使用）。
 
-        Locatorでリンクをクリックし、download.path() でダウンロード完了を確実に待機。
+        Locatorでリンクをクリックし、expect_download() でダウンロード完了を確実に待機。
+        イベント購読の寿命管理がwithブロック内で明確化されます。
 
         Args:
             link_locator: ダウンロードリンク/ボタンのCSSセレクタ（link_nameより優先）
@@ -181,21 +181,11 @@ class PlaywrightScraper:
             ダウンロードディレクトリ内のファイルパス
 
         Raises:
-            RuntimeError: ダウンロード失敗（イベント未発生またはpath()失敗）
+            RuntimeError: ダウンロード失敗（path()失敗時）
             PlaywrightTimeoutError: ロケーター見つからずまたはタイムアウト
         """
-        downloaded_file: Any = None
-
-        def handle_download(download: Any) -> None:
-            nonlocal downloaded_file
-            downloaded_file = download
-            logger.debug(f"Download event received: {download.suggested_filename}")
-
         try:
-            # ダウンロードハンドラを登録（クリック前）
-            self.page.on("download", handle_download)
-
-            # Locatorでダウンロードリンクをクリック
+            # Locatorでダウンロードリンクを取得
             if link_locator:
                 loc: Locator = self.page.locator(link_locator)
             elif link_name:
@@ -204,35 +194,32 @@ class PlaywrightScraper:
                 raise ValueError("link_locator または link_name を指定してください")
 
             logger.info(f"Clicking download link (locator: {link_locator or link_name!r})")
-            loc.click()
 
-            # ダウンロード開始を確認
-            if not downloaded_file:
-                raise RuntimeError(
-                    f"Download did not start (no download event). Locator: {link_locator or link_name!r}"
-                )
+            # expect_download()コンテキストマネージャーでダウンロードを待機
+            # イベント購読の寿命管理がwithブロック内で明確
+            with self.page.expect_download() as download_info:
+                loc.click()
+
+            # ダウンロードオブジェクトを取得
+            download = download_info.value
+            logger.debug(f"Download event received: {download.suggested_filename}")
 
             # ダウンロード完了を待機（Playwright標準パターン）
             # download.path() はダウンロードが完全に完了するまでブロック
-            temp_file_path = Path(downloaded_file.path())
+            temp_file_path = Path(download.path())
 
             # ダウンロードディレクトリに保存
-            target_path = self.download_dir / downloaded_file.suggested_filename
+            target_path = self.download_dir / download.suggested_filename
             shutil.copy2(temp_file_path, target_path)
 
-            logger.info(f"Download completed: {downloaded_file.suggested_filename} -> {target_path}")
+            logger.info(f"Download completed: {download.suggested_filename} -> {target_path}")
             return target_path
 
-        except RuntimeError:
-            logger.error("Download failed: event not received", exc_info=True)
-            raise
         except Exception as e:
             logger.error(f"Download failed: {e!s}", exc_info=True)
             raise RuntimeError(
                 f"Download completion wait failed. Expected file: {expected_filename_pattern or 'unknown'}. Error: {e}"
             ) from e
-        finally:
-            self.page.remove_listener("download", handle_download)
 
     def get_text(self, css_selector: str) -> str:
         """

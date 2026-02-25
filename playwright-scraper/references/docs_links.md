@@ -36,6 +36,8 @@
 - `page.on("download", handler)`: ダウンロード開始時コールバック登録
 
 #### Download ハンドリング
+- **Downloads（公式ガイド）**: https://playwright.dev/python/docs/downloads
+- `page.expect_download()`: ダウンロードイベントをコンテキストマネージャーで待機（推奨）
 - `download.path()`: ダウンロード完了後のファイルパス取得（完了まで待機）
 - `download.save_as(path)`: ダウンロードファイル保存（別パス）
 
