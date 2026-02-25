@@ -3,7 +3,7 @@
 Basic Playwright Scraper Example
 
 ログイン認証・ページネーション・ダウンロード機能を実装した
-基本的なスクレイピング例。
+基本的なスクレイピング例。Locatorを中心に実装。
 
 使用方法:
     python basic_scraper.py
@@ -18,14 +18,13 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Any
 
 from dotenv import load_dotenv
 
 # Playwright インポート
 try:
+    from playwright.sync_api import Locator, sync_playwright
     from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
-    from playwright.sync_api import sync_playwright
 except ImportError:
     print("Error: playwright not installed. Run: pip install playwright")
     sys.exit(1)
@@ -36,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 class PlaywrightScraper:
-    """Playwrightベースのスクレイパー基底クラス"""
+    """Playwrightベースのスクレイパー基底クラス（Locator中心）"""
 
     def __init__(self, headless: bool = True, timeout_ms: int = 30000, download_dir: str | None = None) -> None:
         """
@@ -83,165 +82,195 @@ class PlaywrightScraper:
     def login(
         self,
         url: str,
-        email_selector: str,
-        password_selector: str,
-        login_button_selector: str,
-        email: str,
-        password: str,
-        wait_selector: str | None = None,
+        email_locator: str | None = None,
+        password_locator: str | None = None,
+        login_button_locator: str | None = None,
+        email: str = "",
+        password: str = "",  # nosec B107:空文字列デフォルト値は実際のセキュリティリスクではない
+        success_locator: str | None = None,
     ) -> bool:
         """
-        ログイン処理（汎用）。
+        ログイン処理（汎用・Locatorベース）。
+
+        Locatorは操作前に自動で要素が操作可能になるまで待機するため、
+        `wait_for_selector` による手動待機は不要。
+
+        **フォールバック値の注意**:
+            省略時のフォールバック値（「メールアドレス」「パスワード」「ログイン」）は
+            Webサイトによって異なります。サイト固有のラベルやボタンテキストに合わせて、
+            適切なCSSセレクタを指定してください。
 
         Args:
             url: ログインページURL
-            email_selector: メールアドレス入力フィールドのセレクタ
-            password_selector: パスワード入力フィールドのセレクタ
-            login_button_selector: ログインボタンのセレクタ
+            email_locator: メールアドレス入力フィールドのCSSセレクタ（省略時: get_by_label("メールアドレス")使用）
+            password_locator: パスワード入力フィールドのCSSセレクタ（省略時: get_by_label("パスワード")使用）
+            login_button_locator: ログインボタンのCSSセレクタ（省略時: get_by_role("button", name="ログイン")使用）
             email: ログインメールアドレス（環境変数や引数から）
             password: ログインパスワード（環境変数や引数から）
-            wait_selector: ログイン完了を検証するセレクタ（省略可）
+            success_locator: ログイン完了を検証するCSSセレクタ（省略可）
 
         Returns:
             ログイン成功時 True
 
         Raises:
             PlaywrightTimeoutError: タイムアウト
-            ValueError: セレクタ見つからず
         """
         try:
             logger.info(f"Navigating to {url}")
             self.page.goto(url)
             self.page.wait_for_load_state("domcontentloaded")
 
-            # メールアドレス入力
-            logger.debug(f"Filling email field: {email_selector}")
-            self.page.fill(email_selector, email)
+            # メールアドレス入力（Locatorが自動待機）
+            # 注意: フォールバック値「メールアドレス」はWebサイト固有。サイトに合わせて email_locator を指定してください
+            email_loc: Locator = (
+                self.page.locator(email_locator) if email_locator else self.page.get_by_label("メールアドレス")
+            )
+            logger.debug("Filling email field")
+            email_loc.fill(email)
 
-            # パスワード入力
-            logger.debug(f"Filling password field: {password_selector}")
-            self.page.fill(password_selector, password)
+            # パスワード入力（Locatorが自動待機）
+            # 注意: フォールバック値「パスワード」はWebサイト固有。サイトに合わせて password_locator を指定してください
+            password_loc: Locator = (
+                self.page.locator(password_locator) if password_locator else self.page.get_by_label("パスワード")
+            )
+            logger.debug("Filling password field")
+            password_loc.fill(password)
 
-            # ログインボタン クリック
+            # ログインボタン クリック（Locatorが自動待機）
+            # 注意: フォールバック値「ログイン」はWebサイト固有。サイトに合わせて login_button_locator を指定してください
+            login_btn: Locator = (
+                self.page.locator(login_button_locator)
+                if login_button_locator
+                else self.page.get_by_role("button", name="ログイン")
+            )
             logger.info("Clicking login button")
-            self.page.click(login_button_selector)
+            login_btn.click()
 
             # ページロード完了を待機
             self.page.wait_for_load_state("networkidle")
             logger.info("Login page loaded after click")
 
             # ログイン完了を検証（オプション）
-            if wait_selector:
-                self.page.wait_for_selector(wait_selector, timeout=self.timeout_ms)
-                logger.info(f"Login verification selector found: {wait_selector}")
+            if success_locator:
+                self.page.locator(success_locator).wait_for(state="visible", timeout=self.timeout_ms)
+                logger.info(f"Login verification locator found: {success_locator}")
 
             logger.info("Login successful")
             return True
 
         except PlaywrightTimeoutError as e:
-            logger.error(f"Login timeout (expected selector: {wait_selector})", exc_info=True)
-            raise ValueError("ログイン処理がタイムアウト。パスワード確認、セレクタを確認してください。") from e
+            logger.error(f"Login timeout (success locator: {success_locator})", exc_info=True)
+            raise ValueError(
+                f"ログイン処理がタイムアウト。パスワード確認、ロケーターを確認してください。"
+                f" (URL: {url}, success_locator: {success_locator})"
+            ) from e
         except Exception:
             logger.error("Login failed", exc_info=True)
             raise
 
-    def download_file(self, link_selector: str, expected_filename_pattern: str | None = None) -> Path | None:
+    def download_file(
+        self,
+        link_locator: str | None = None,
+        link_name: str | None = None,
+        expected_filename_pattern: str | None = None,
+    ) -> Path | None:
         """
-        ファイルダウンロード処理（Playwright標準パターン）。
+        ファイルダウンロード処理（expect_download()コンテキストマネージャー使用）。
 
-        ダウンロードの完了を確実に待機するため、download.path() メソッドを使用します。
-        このメソッドはダウンロードが完全に完了するまでブロックします。
+        Locatorでリンクをクリックし、expect_download() でダウンロード完了を確実に待機。
+        イベント購読の寿命管理がwithブロック内で明確化されます。
 
         Args:
-            link_selector: ダウンロードリンク/ボタンのセレクタ
+            link_locator: ダウンロードリンク/ボタンのCSSセレクタ（link_nameより優先）
+            link_name: ダウンロードリンクのアクセシブル名（get_by_role使用）
             expected_filename_pattern: 期待するファイル名パターン（チェック用、オプション）
 
         Returns:
             ダウンロードディレクトリ内のファイルパス
 
         Raises:
-            RuntimeError: ダウンロード失敗（イベント未発生またはpath()失敗）
-            PlaywrightTimeoutError: セレクタ見つからずまたはタイムアウト
+            RuntimeError: ダウンロード失敗（path()失敗時）
+            PlaywrightTimeoutError: ロケーター見つからずまたはタイムアウト
         """
-        downloaded_file = None
-
-        def handle_download(download: Any) -> None:
-            nonlocal downloaded_file
-            downloaded_file = download
-            logger.debug(f"Download event received: {download.suggested_filename}")
-
         try:
-            # ダウンロードハンドラを登録（クリック前）
-            self.page.on("download", handle_download)
+            # Locatorでダウンロードリンクを取得
+            if link_locator:
+                loc: Locator = self.page.locator(link_locator)
+            elif link_name:
+                loc = self.page.get_by_role("link", name=link_name)
+            else:
+                raise ValueError("link_locator または link_name を指定してください")
 
-            # ダウンロードリンクをクリック
-            logger.info(f"Clicking download link: {link_selector}")
-            self.page.click(link_selector)
+            logger.info(f"Clicking download link (locator: {link_locator or link_name!r})")
 
-            # ダウンロード開始を確認
-            if not downloaded_file:
-                raise RuntimeError("Download did not start (no download event). Link selector may be incorrect.")
+            # expect_download()コンテキストマネージャーでダウンロードを待機
+            # イベント購読の寿命管理がwithブロック内で明確
+            with self.page.expect_download() as download_info:
+                loc.click()
+
+            # ダウンロードオブジェクトを取得
+            download = download_info.value
+            logger.debug(f"Download event received: {download.suggested_filename}")
 
             # ダウンロード完了を待機（Playwright標準パターン）
             # download.path() はダウンロードが完全に完了するまでブロック
-            temp_file_path = Path(downloaded_file.path())
+            temp_file_path = Path(download.path())
 
             # ダウンロードディレクトリに保存
-            target_path = self.download_dir / downloaded_file.suggested_filename
+            target_path = self.download_dir / download.suggested_filename
             shutil.copy2(temp_file_path, target_path)
 
-            logger.info(f"Download completed: {downloaded_file.suggested_filename} -> {target_path}")
+            logger.info(f"Download completed: {download.suggested_filename} -> {target_path}")
             return target_path
 
-        except RuntimeError:
-            logger.error("Download failed: event not received", exc_info=True)
-            raise
         except Exception as e:
             logger.error(f"Download failed: {e!s}", exc_info=True)
             raise RuntimeError(
                 f"Download completion wait failed. Expected file: {expected_filename_pattern or 'unknown'}. Error: {e}"
             ) from e
-        finally:
-            self.page.remove_listener("download", handle_download)
 
-    def get_text(self, selector: str) -> str:
+    def get_text(self, css_selector: str) -> str:
         """
-        セレクタからテキストを取得。
+        Locator経由でテキストを取得。
 
         Args:
-            selector: CSS/XPathセレクタ
+            css_selector: CSSセレクタ
 
         Returns:
             テキスト内容
 
         Raises:
-            ValueError: セレクタ見つからず
+            ValueError: ロケーターが見つからず
         """
         try:
-            text = self.page.text_content(selector)
+            loc = self.page.locator(css_selector)
+            loc.wait_for(state="visible", timeout=self.timeout_ms)
+            text = loc.text_content()
             if text is None:
-                raise ValueError(f"Element not found: {selector}")
+                raise ValueError(f"Element text is None. Locator: {css_selector!r}, URL: {self.page.url}")
             return text.strip()
+        except PlaywrightTimeoutError:
+            logger.error(f"Locator not found: {css_selector!r}", exc_info=True)
+            raise
         except Exception:
-            logger.error(f"Failed to get text from {selector}", exc_info=True)
+            logger.error(f"Failed to get text from {css_selector!r}", exc_info=True)
             raise
 
-    def get_attribute(self, selector: str, attr: str) -> str | None:
+    def get_attribute(self, css_selector: str, attr: str) -> str | None:
         """
-        セレクタから属性値を取得。
+        Locator経由で属性値を取得。
 
         Args:
-            selector: CSS/XPathセレクタ
+            css_selector: CSSセレクタ
             attr: 属性名
 
         Returns:
             属性値（存在しない場合 None）
         """
         try:
-            value = self.page.get_attribute(selector, attr)
-            return value
+            return self.page.locator(css_selector).get_attribute(attr)
         except Exception:
-            logger.warning(f"Failed to get attribute {attr} from {selector}", exc_info=True)
+            logger.warning(f"Failed to get attribute {attr!r} from {css_selector!r}", exc_info=True)
             return None
 
 
@@ -250,34 +279,32 @@ if __name__ == "__main__":
     # 環境変数読み込み
     load_dotenv()
 
-    # 設定
     EMAIL = os.environ.get("EMAIL", "your_email@example.com")
     PASSWORD = os.environ.get("PASSWORD", "your_password")
 
     scraper = None
     try:
-        # スクレイパー初期化
         scraper = PlaywrightScraper(headless=True, download_dir="./downloads")
         scraper.launch()
 
-        # ログイン
+        # ログイン（Locatorベース）
         scraper.login(
-            url="https://example.com/login",  # 実際のログインURLに置き換えてください
-            email_selector="#loginId",
-            password_selector="#password",  # nosec B106 # noqa: S106 - example selector, not a password
-            login_button_selector="button[type='submit']",
+            url="https://example.com/login",  # 実際のURLに置き換えてください
+            email_locator='input[name="email"]',
+            password_locator='input[name="password"]',  # noqa: S106 # nosec B106 - CSSセレクタであり実パスワードではない
+            login_button_locator='button[type="submit"]',
             email=EMAIL,
             password=PASSWORD,
-            wait_selector=".welcome-message",  # ログイン完了を検証
+            success_locator=".welcome-message",  # ログイン完了を検証
         )
 
-        # データ取得例（ページソースから確認したセレクタを使用）
-        title = scraper.get_text("title")
+        # データ取得例（Locatorでテキスト取得）
+        title = scraper.get_text("h1")
         logger.info(f"Page title: {title}")
 
         # ダウンロード例
         # zip_path = scraper.download_file(
-        #     link_selector="a[href*='download']",
+        #     link_name="データダウンロード",
         #     expected_filename_pattern="*.zip"
         # )
         # logger.info(f"Downloaded file: {zip_path}")
