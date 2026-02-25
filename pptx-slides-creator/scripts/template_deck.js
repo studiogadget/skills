@@ -263,7 +263,7 @@ function buildConsultingTable(headers, rows) {
         color: C.textDark,
         fontFace: colIdx === 0 ? "Yu Gothic" : "Calibri",
         fontSize: 10,
-        align: colIdx === 0 ? "left" : "center",
+        align: colIdx === 0 ? "left" : "right",
         valign: "middle",
         border: { pt: 0.5, color: C.gridLine },
         margin: [3, 6, 3, 6],
@@ -623,14 +623,15 @@ function addFunnel(slide, pres, { stages, x, y, w, h }) {
   const funnelY = y || L.contentY + 0.2;
   const funnelW = w || 7.0;
   const funnelH = h || 3.2;
-  const stageH = funnelH / stages.length;
+  const gap = 0.08;
+  const n = stages.length;
+  const stageH = n > 0 ? (funnelH - gap * (n - 1)) / n : 0;
   const colors = [C.royalBlue, C.blue2, C.blue3, C.blue4, C.blue5];
-
   stages.forEach((stage, i) => {
     const widthRatio = 1 - (i * 0.18);
     const stageW = funnelW * widthRatio;
     const stageX = funnelX + (funnelW - stageW) / 2;
-    const stageY = funnelY + i * (stageH + 0.08);
+    const stageY = funnelY + i * (stageH + gap);
 
     slide.addShape(pres.shapes.RECTANGLE, {
       x: stageX, y: stageY, w: stageW, h: stageH - 0.1,

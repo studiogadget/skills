@@ -46,6 +46,12 @@ const C = {
   // アクセント
   accentRed:    "C8102E",   // コールアウト、デルタ、アラートに控えめに使用
   accentGreen:  "2E7D32",   // ポジティブデルタ
+  accentOrange: "E65100",   // SWOT弱み/ヘッダー
+
+  // 背景（ユースケース専用）
+  bgBeige:      "FFF3E0",   // SWOT弱み背景
+  bgGreenLight: "E8F5E9",   // SWOT機会背景
+  bgRedLight:   "FFEBEE",   // SWOT脅威背景
 
   // 構造
   gridLine:     "D0D0D0",   // テーブルボーダー、フレームワークライン
@@ -686,7 +692,7 @@ function addWaterfallChart(slide, pres, {
     x: chartX, y: chartY, w: chartW, h: chartH,
     barDir: "col",
     barGrouping: "stacked",
-    chartColors: ["FFFFFF", C.royalBlue, C.accentRed],  // 透明ベース、青増加、赤減少
+    chartColors: [C.bgWhite, C.royalBlue, C.accentRed],  // 透明ベース、青増加、赤減少
     chartArea: { fill: { color: C.bgWhite } },
     catAxisLabelColor: C.textDark,
     catAxisLabelFontFace: "Calibri",
@@ -937,9 +943,9 @@ function addSWOTMatrix(slide, pres, {
 
   const quadrants = [
     { label: "強み (Strengths)", items: strengths, fill: C.blue5, headerFill: C.royalBlue },
-    { label: "弱み (Weaknesses)", items: weaknesses, fill: "FFF3E0", headerFill: "E65100" },
-    { label: "機会 (Opportunities)", items: opportunities, fill: "E8F5E9", headerFill: C.accentGreen },
-    { label: "脅威 (Threats)", items: threats, fill: "FFEBEE", headerFill: C.accentRed },
+    { label: "弱み (Weaknesses)", items: weaknesses, fill: C.bgBeige, headerFill: C.accentOrange },
+    { label: "機会 (Opportunities)", items: opportunities, fill: C.bgGreenLight, headerFill: C.accentGreen },
+    { label: "脅威 (Threats)", items: threats, fill: C.bgRedLight, headerFill: C.accentRed },
   ];
 
   const positions = [
