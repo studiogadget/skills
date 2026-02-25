@@ -73,9 +73,17 @@ while next_btn.is_visible():
 ```
 
 **ダウンロード**:
-- 事前に download ハンドラ登録 (`page.on("download", handler)`)
-- Locator 経由でリンク・ボタンをクリック
-- ダウンロード完了を `download.path()` で待機
+- `page.expect_download()` コンテキストマネージャーを使用（イベント購読管理が明確）
+- Locator 経由でリンク・ボタンをクリック（withブロック内）
+- ダウンロード完了を確実に待機（`download.path()` がブロック）
+
+```python
+# ✅ expect_download()コンテキストマネージャーを使用（推奨）
+with page.expect_download() as download_info:
+    page.get_by_role("link", name="ダウンロード").click()  # Locator使用
+download = download_info.value
+file_path = Path(download.path())  # ダウンロード完了まで自動ブロック
+```
 
 ### Step 3: エラーハンドリング・ロギング統合
 
@@ -113,35 +121,58 @@ page_limit: 5                     # ページネーション上限
 
 ## ダウンロード完了待機のパターン比較
 
-Playwrightでファイルダウンロードを実装する際、完了待機の方法は2つのパターンがあります：
+Playwrightでファイルダウンロードを実装する際、完了待機の方法は3つのパターンがあります：
 
-### パターンA: `download.path()` で完了を待機（推奨）
+### パターンA: `page.expect_download()` コンテキストマネージャー（推奨 ⭐）
 
 ```python
-def handle_download(download):
-    # download.path() はダウンロード完了までブロック
-    file_path = Path(download.path())
-    target_path = self.download_dir / download.suggested_filename
-    shutil.copy2(file_path, target_path)
-    return target_path
+# ✅ イベント購読の寿命管理が明確（withブロック内で完結）
+with page.expect_download() as download_info:
+    page.get_by_role("link", name="ダウンロード").click()
+download = download_info.value
+file_path = Path(download.path())  # ダウンロード完了までブロック
+target_path = self.download_dir / download.suggested_filename
+shutil.copy2(file_path, target_path)
 ```
 
 **メリット**:
-- Playwright標準パターン
+- **イベント購読が明確** - withブロック内で管理
+- 最新のPlaywright推奨パターン
 - ダウンロード完了を確実に待機
 - ファイルが確実に書き込まれたことを保証
-- ユーザーはすぐにファイルを使用可能
+- `basic_scraper.py` で採用
 
-### パターンB: `page.wait_for_load_state("networkidle")` で待機
+### パターンB: `page.on()` + `download.path()`（非推奨）
 
 ```python
-# Locatorを使用してもdownload完了保証はない
+# ❌ イベント購読の寿命管理が暗黙的
+def handle_download(download):
+    file_path = Path(download.path())
+    target_path = self.download_dir / download.suggested_filename
+    shutil.copy2(file_path, target_path)
+
 page.on("download", handle_download)
-page.get_by_role("link", name="ダウンロード").click()  # Locator使用
+page.get_by_role("link", name="ダウンロード").click()
+```
+
+**問題点**:
+- イベントハンドラの購読終了管理が曖昧
+- 複数ダウンロード時に順序や完了保証が不明確
+
+### パターンC: `page.wait_for_load_state()` のみ（非推奨）
+
+```python
+# ❌ ダウンロード完了を明示的に待機しない
+page.on("download", handle_download)
+page.get_by_role("link", name="ダウンロード").click()
 page.wait_for_load_state("networkidle")  # リスク: race condition
 ```
 
-**推奨**: パターンA（`download.path()`）を使用してください。basic_scraper.pyはこのパターンで実装されています。
+**問題点**:
+- ダウンロード完了を保証しない（ネットワークイベント終了と異なる）
+- ファイルが部分的に書き込まれる可能性
+
+**推奨**: **パターンA** (`page.expect_download()` コンテキストマネージャー）を使用してください。
 
 ## Locator 優先の理由
 
@@ -168,7 +199,7 @@ page.wait_for_load_state("networkidle")  # リスク: race condition
 - [ ] `query_selector` / `wait_for_selector` を使わず Locator を使用している
 - [ ] セマンティックロケーター（`get_by_role`, `get_by_label` 等）を優先している
 - [ ] ログイン後のページロード完了を明示的に待機している
-- [ ] ダウンロード時に `download.path()` で完了を確実に待機している
+- [ ] ダウンロード時に `page.expect_download()` コンテキストマネージャーでダウンロードを待機している
 - [ ] 認証情報を環境変数で管理している（ハードコード禁止）
 - [ ] タイムアウト時に具体的なエラーメッセージを出力している
 - [ ] 構造化ログ（JSON or 標準format）で実行過程を記録している
