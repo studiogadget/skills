@@ -7,25 +7,3 @@ __pycache__/
 .vscode/
 .venv/
 .github/
-*
-!README.md
-
-# スキルを追加したら、以下の行を追加して追跡対象にする
-!skill-creator/
-!skill-creator/**/**
-!skill-creator-from-logs/
-!skill-creator-from-logs/**/**
-!playwright-scraper/
-!playwright-scraper/**/**
-!python-readable-code/
-!python-readable-code/**/**
-!storage-state/
-!storage-state/**/**
-
-# 例外設定後も__pycache__を明示的に無視（最後に配置して優先）
-**/__pycache__/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.pytest_cache/
