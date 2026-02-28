@@ -134,7 +134,7 @@ description: |-
 - **python-readable-code**：Pythonコードのリーダブルコード原則に基づくレビュー・改善スキル（AI駆動開発時代の「理解速度最大化」を重視）
 - **storage-state**：Playwrightの storage_state.json を管理するスキル（生成スクリプト + 古い場合の警告ロジック）
 - **pptx-slides-creator**：日本語のパワーポイントスライド（.pptx）を作成するスキル。McKinsey/BCGスタイルのコンサルティング品質で、データビジュアライゼーション、フレームワーク、テーブル、マルチカラムレイアウトを含む洗練されたスライドを生成する。
-- **docker-deployment-guide**: Dockerを使ったアプリケーションのデプロイガイドスキル。Docker Composeビルドからイメージ転送、サーバー配置、設定、動作確認、cron設定までの手順書をMarkdown形式で生成する。
+- **docker-deployment-guide**：Dockerを使ったアプリケーションのデプロイガイドスキル。Docker Composeビルドからイメージ転送、サーバー配置、設定、動作確認、cron設定までの手順書をMarkdown形式で生成する。
 ---
 
 ## コントリビュート

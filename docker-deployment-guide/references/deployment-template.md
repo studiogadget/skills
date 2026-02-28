@@ -13,7 +13,7 @@
 
 ## 1. 前提条件
 
-- Docker Engine 20.10以上がインストール済み
+- Docker Engine 25.0以上がインストール済み
 - Docker Composeがインストール済み（v2推奨）
 - サーバーに十分なディスク容量がある（イメージ約{{image-size-estimate}} + データ領域）
 - ファイル転送ツール（WinSCP等）が利用可能
@@ -147,7 +147,7 @@ Get-Item "{{docker-image-name}}-$env:IMAGE_TAG.tar.gz" | `
 | 形式 | 用途 | 例 |
 |------|------|------|
 | yyyymmdd | **推奨**：日付ベース、追跡可能 | `20260228`, `20260101` |
-| yyyymmdd-hmm | より詳細な時刻管理 | `20260228-1030` |
+| yyyymmdd-HHmm | より詳細な時刻管理 | `20260228-1030` |
 | yyyymmdd-feature | フィーチャー付き | `20260228-fix-v2` |
 | セマンティック | 正式リリース（個別管理） | `1.0.0`, `2.0.0` |
 
@@ -453,11 +453,15 @@ cp config/config.example.yaml config/config.yaml
 **解決方法**:
 
 ```bash
-# ディレクトリのパーミッションを修正
-chmod -R 777 output logs
+# ディレクトリが存在しない場合は作成
+mkdir -p output logs
 
-# または、ディレクトリのオーナーを変更
-chown -R 1001:1001 output logs  # Dockerfile内のappuserのUID/GIDは1001
+# ディレクトリのオーナーをコンテナ実行ユーザーに変更
+# 例: Dockerfile内の appuser の UID/GID が 1001:1001 の場合
+chown -R 1001:1001 output logs
+
+# 必要最小限のパーミッションを付与（所有者: 読み書き実行, グループ: 読み書き実行, その他: アクセス不可）
+chmod -R 770 output logs
 ```
 
 ### 8.4 イメージバージョンが見つからない
