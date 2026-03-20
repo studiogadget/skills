@@ -27,6 +27,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 _ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*m")
+_EVENT_KEY_VALUE_RE = re.compile(r"(?<!\w)event=(\"[^\"]*\"|'[^']*'|[^\s,}]+)")
 
 
 def _normalize_log_message(message: str) -> str:
@@ -34,6 +35,43 @@ def _normalize_log_message(message: str) -> str:
     normalized = _ANSI_ESCAPE_RE.sub("", message)
     normalized = re.sub(r"\s*=\s*", "=", normalized)
     return normalized
+
+
+def _contains_exact_event(message: str, event: str) -> bool:
+    """event キーが指定値に完全一致するか判定する。"""
+    for match in _EVENT_KEY_VALUE_RE.finditer(message):
+        value = match.group(1).strip("\"'")
+        if value == event:
+            return True
+    return False
+
+
+def _collect_fallback_logs(
+    *,
+    event: str,
+    caplog: pytest.LogCaptureFixture,
+    include_exc_info: bool,
+) -> list[dict[str, Any]]:
+    """caplog から event の完全一致レコードを抽出する。"""
+    fallback: list[dict[str, Any]] = []
+    for record in caplog.records:
+        msg = _normalize_log_message(record.getMessage())
+        raw = _normalize_log_message(str(record.msg))
+        msg_matches = _contains_exact_event(msg, event)
+        raw_matches = _contains_exact_event(raw, event)
+        if not (msg_matches or raw_matches):
+            continue
+
+        merged = msg if msg_matches else raw
+        entry: dict[str, Any] = {
+            "event": event,
+            "log_level": record.levelname.lower(),
+            "message": merged,
+        }
+        if include_exc_info:
+            entry["exc_info"] = record.exc_info is not None or "Traceback (most recent call last):" in merged
+        fallback.append(entry)
+    return fallback
 
 
 # ---------------------------------------------------------------------------
@@ -58,30 +96,12 @@ def _find_event_logs(
         マッチしたログエントリのリスト。構造化パスでは元のdictを、
         フォールバックパスでは event/log_level/message キーを持つdictを返す。
     """
-    # 1) capture_logs の構造化パス（優先）
+    # 1) capture_logs の構造化パス
     structured = [e for e in captured if e.get("event") == event]
-    if structured:
-        return structured
 
     # 2) caplog フォールバックパス
-    fallback: list[dict[str, Any]] = []
-    seen: set[str] = set()
-    for record in caplog.records:
-        msg = _normalize_log_message(record.getMessage())
-        raw = _normalize_log_message(str(record.msg))
-        if event in msg or event in raw:
-            merged = msg if event in msg else raw
-            if merged in seen:
-                continue
-            seen.add(merged)
-            fallback.append(
-                {
-                    "event": event,
-                    "log_level": record.levelname.lower(),
-                    "message": merged,
-                }
-            )
-    return fallback
+    fallback = _collect_fallback_logs(event=event, caplog=caplog, include_exc_info=False)
+    return [*structured, *fallback]
 
 
 # ---------------------------------------------------------------------------
@@ -100,25 +120,6 @@ def _find_event_logs_with_exc_info(
     ERRORログの exc_info=True 検証が必要な場合に使用する。
     """
     structured = [e for e in captured if e.get("event") == event]
-    if structured:
-        return structured
 
-    fallback: list[dict[str, Any]] = []
-    seen: set[str] = set()
-    for record in caplog.records:
-        msg = _normalize_log_message(record.getMessage())
-        raw = _normalize_log_message(str(record.msg))
-        if event in msg or event in raw:
-            merged = msg if event in msg else raw
-            if merged in seen:
-                continue
-            seen.add(merged)
-            fallback.append(
-                {
-                    "event": event,
-                    "log_level": record.levelname.lower(),
-                    "message": merged,
-                    "exc_info": (record.exc_info is not None or "Traceback (most recent call last):" in merged),
-                }
-            )
-    return fallback
+    fallback = _collect_fallback_logs(event=event, caplog=caplog, include_exc_info=True)
+    return [*structured, *fallback]
