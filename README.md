@@ -135,6 +135,8 @@ description: |-
 - **storage-state**：Playwrightの storage_state.json を管理するスキル（生成スクリプト + 古い場合の警告ロジック）
 - **pptx-slides-creator**：日本語のパワーポイントスライド（.pptx）を作成するスキル。McKinsey/BCGスタイルのコンサルティング品質で、データビジュアライゼーション、フレームワーク、テーブル、マルチカラムレイアウトを含む洗練されたスライドを生成する。
 - **docker-deployment-guide**：Dockerを使ったアプリケーションのデプロイガイドスキル。Docker Composeビルドからイメージ転送、サーバー配置、設定、動作確認、cron設定までの手順書をMarkdown形式で生成する。
+- **ci-stable-log-testing**：CI環境での安定したログ取得とテスト実行を支援するスキル。CI環境でよくある失敗パターンと対処法を提供する。
+
 ---
 
 ## コントリビュート
