@@ -85,7 +85,11 @@ def _find_event_logs(
     event: str,
     caplog: pytest.LogCaptureFixture,
 ) -> list[dict[str, Any]]:
-    """capture_logs の結果が空の場合に caplog をフォールバック利用する。
+    """capture_logs にヒットがあれば structured のみ、空の場合のみ caplog をフォールバックとして使用する。
+
+    structured が1件以上ある場合は caplog を参照せず、重複エントリの混入を防ぐ。
+    structured が空の場合（CI環境でプロセッサーチェーンが動作しないケース等）に限り
+    caplog から event キー完全一致のレコードを抽出する。
 
     Args:
         captured: structlog.testing.capture_logs() の戻り値
@@ -96,12 +100,13 @@ def _find_event_logs(
         マッチしたログエントリのリスト。構造化パスでは元のdictを、
         フォールバックパスでは event/log_level/message キーを持つdictを返す。
     """
-    # 1) capture_logs の構造化パス
+    # 1) capture_logs の構造化パス（優先）
     structured = [e for e in captured if e.get("event") == event]
+    if structured:
+        return structured
 
-    # 2) caplog フォールバックパス
-    fallback = _collect_fallback_logs(event=event, caplog=caplog, include_exc_info=False)
-    return [*structured, *fallback]
+    # 2) structured が空の場合のみ caplog フォールバック
+    return _collect_fallback_logs(event=event, caplog=caplog, include_exc_info=False)
 
 
 # ---------------------------------------------------------------------------
@@ -118,8 +123,13 @@ def _find_event_logs_with_exc_info(
     """_find_event_logs の exc_info 判定付きバリアント。
 
     ERRORログの exc_info=True 検証が必要な場合に使用する。
+    structured が取れている場合は structured のみ返す（caplog との重複結合によるフレーキー防止）。
+    structured が空の場合のみ caplog フォールバックで exc_info を付加して返す。
     """
+    # 1) capture_logs の構造化パス（優先）
     structured = [e for e in captured if e.get("event") == event]
+    if structured:
+        return structured
 
-    fallback = _collect_fallback_logs(event=event, caplog=caplog, include_exc_info=True)
-    return [*structured, *fallback]
+    # 2) structured が空の場合のみ caplog フォールバック
+    return _collect_fallback_logs(event=event, caplog=caplog, include_exc_info=True)
