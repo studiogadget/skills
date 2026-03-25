@@ -212,6 +212,7 @@ async function convert() {
     console.error('以下のいずれかを試してください:');
     console.error('  - CHROME_PATH 環境変数で Chrome のパスを指定');
     console.error('  - chromium-browser または google-chrome をインストール');
+    console.error('  - Docker/CI 環境では PUPPETEER_ARGS="--no-sandbox --disable-dev-shm-usage" を設定');
     process.exit(1);
   }
   console.error(`Using Chrome: ${chromePath}`);
@@ -233,11 +234,15 @@ async function convert() {
 
   const fileUrl = `file://${targetPath}`;
 
+  const extraArgs = process.env.PUPPETEER_ARGS
+    ? process.env.PUPPETEER_ARGS.split(/\s+/).filter(Boolean)
+    : [];
+
   try {
     const browser = await puppeteer.launch({
       executablePath: chromePath,
       headless: true,
-      args: ['--allow-file-access-from-files'],
+      args: ['--allow-file-access-from-files', ...extraArgs],
     });
     const page = await browser.newPage();
 
