@@ -1,0 +1,9 @@
+{
+  "name": "notion-pdf-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "puppeteer-core": "^24.0.0"
+  }
+}
