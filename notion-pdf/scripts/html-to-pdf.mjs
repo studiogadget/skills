@@ -237,7 +237,7 @@ async function convert() {
     const browser = await puppeteer.launch({
       executablePath: chromePath,
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--allow-file-access-from-files'],
+      args: ['--allow-file-access-from-files'],
     });
     const page = await browser.newPage();
 
