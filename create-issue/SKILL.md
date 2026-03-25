@@ -66,7 +66,7 @@ $labelExists = gh label list --json name --jq ".[].name" | Select-String -Quiet 
 
 if (-not $labelExists) {
     # ラベルが存在しない場合は作成
-    gh label create "<label>" --color "<color>"
+    gh label create --force "<label>" --color "<color>"
 }
 ```
 
@@ -85,7 +85,7 @@ if (-not $labelExists) {
 
 1. Issue 本文を一時ファイル `issue_body.md` に書き出す
 2. `gh issue create` コマンドで投稿する
-3. 一時ファイルを削除する
+3. 一時ファイルを削除する（2で失敗した場合も必ず実行すること）
 
 ```powershell
 # 投稿コマンド
@@ -109,4 +109,5 @@ Remove-Item issue_body.md
 
 - `gh` CLI がインストール済みかつ認証済みであることを前提とする
 - `gh` コマンドが失敗した場合は、エラー内容をユーザーに報告し対処法を提示する
+- `gh` コマンドが失敗した場合も、`issue_body.md` は必ず削除すること（クリーンアップの徹底）
 - PowerShell 環境でのヒアドキュメント（`@- << 'EOF'`）は非対応のため、一時ファイル経由で投稿する
