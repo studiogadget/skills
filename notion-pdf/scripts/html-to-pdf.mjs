@@ -13,7 +13,7 @@
 import puppeteer from 'puppeteer-core';
 import { readFileSync, writeFileSync, unlinkSync, existsSync } from 'fs';
 import { resolve, dirname, join, basename } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -105,9 +105,10 @@ function resolveLocalAssets(html) {
   ];
   for (const p of primerPaths) {
     if (existsSync(p)) {
+      const primerFileUrl = pathToFileURL(p).href;
       html = html.replace(
         /https?:\/\/cdn\.jsdelivr\.net\/npm\/@primer\/css@\d+\/dist\/primer\.css/g,
-        `file://${p}`,
+        primerFileUrl,
       );
       break;
     }
@@ -116,9 +117,10 @@ function resolveLocalAssets(html) {
   // mermaid.js
   const mermaidLocal = join(__dirname, 'node_modules', 'mermaid', 'dist', 'mermaid.esm.min.mjs');
   if (existsSync(mermaidLocal)) {
+    const mermaidFileUrl = pathToFileURL(mermaidLocal).href;
     html = html.replace(
       /https?:\/\/cdn\.jsdelivr\.net\/npm\/mermaid@\d+\/dist\/mermaid\.esm\.min\.mjs/g,
-      `file://${mermaidLocal}`,
+      mermaidFileUrl,
     );
   }
 
@@ -132,17 +134,16 @@ async function embedImages(html) {
   const matches = [...html.matchAll(imgRegex)];
   if (matches.length === 0) return html;
 
-  console.error(`Downloading ${matches.length} image(s)...`);
+  const uniqueUrls = [...new Set(matches.map((match) => match[1]))];
+  console.error(`Downloading ${uniqueUrls.length} image URL(s)...`);
 
   const results = await Promise.allSettled(
-    matches.map(async (match) => {
-      const url = match[1];
+    uniqueUrls.map(async (url) => {
       const res = await fetch(url, { signal: AbortSignal.timeout(30000) });
       if (!res.ok) throw new Error(`HTTP ${res.status} for ${url.slice(0, 80)}...`);
       const buffer = Buffer.from(await res.arrayBuffer());
       const contentType = res.headers.get('content-type') || 'image/png';
       return {
-        original: match[0],
         url,
         dataUri: `data:${contentType};base64,${buffer.toString('base64')}`,
       };
@@ -151,14 +152,16 @@ async function embedImages(html) {
 
   let result = html;
   let downloaded = 0;
+  let replaced = 0;
   let failed = 0;
 
   for (const r of results) {
     if (r.status === 'fulfilled') {
-      result = result.replace(
-        r.value.original,
-        r.value.original.replace(/src=["']https?:\/\/[^"']+["']/, `src="${r.value.dataUri}"`),
-      );
+      const escapedUrl = r.value.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const srcRegex = new RegExp(`src=["']${escapedUrl}["']`, 'g');
+      const hitCount = (result.match(srcRegex) || []).length;
+      result = result.replace(srcRegex, `src="${r.value.dataUri}"`);
+      replaced += hitCount;
       downloaded++;
     } else {
       console.error(`  Warning: ${r.reason.message}`);
@@ -166,7 +169,7 @@ async function embedImages(html) {
     }
   }
 
-  console.error(`  ${downloaded} downloaded, ${failed} failed`);
+  console.error(`  ${downloaded} downloaded, ${replaced} replaced, ${failed} failed`);
   return result;
 }
 
@@ -232,7 +235,7 @@ async function convert() {
     console.error('Assets resolved to local/embedded');
   }
 
-  const fileUrl = `file://${targetPath}`;
+  const fileUrl = pathToFileURL(targetPath).href;
 
   const extraArgs = process.env.PUPPETEER_ARGS
     ? process.env.PUPPETEER_ARGS.split(/\s+/).filter(Boolean)
@@ -250,6 +253,8 @@ async function convert() {
 
     // mermaid 等の非同期レンダリングを待つ
     await page.evaluate(() => new Promise((resolve) => {
+      const mermaidBlocks = document.querySelectorAll('.mermaid');
+      if (mermaidBlocks.length === 0) return resolve();
       const svgs = document.querySelectorAll('.mermaid svg');
       if (svgs.length > 0) return resolve();
       const observer = new MutationObserver(() => {
