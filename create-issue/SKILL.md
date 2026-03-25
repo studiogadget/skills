@@ -88,11 +88,14 @@ if (-not $labelExists) {
 3. 一時ファイルを削除する（2で失敗した場合も必ず実行すること）
 
 ```powershell
-# 投稿コマンド
-gh issue create --title "<title>" --body-file issue_body.md --label "<label>"
-
-# クリーンアップ
-Remove-Item issue_body.md
+try {
+    # 投稿コマンド
+    gh issue create --title "<title>" --body-file issue_body.md --label "<label>"
+}
+finally {
+    # クリーンアップ（成功・失敗にかかわらず実行）
+    Remove-Item issue_body.md -ErrorAction SilentlyContinue
+}
 ```
 
 **タイトル形式**: `<type>(<scope>): <summary>`
