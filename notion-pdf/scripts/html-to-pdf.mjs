@@ -27,7 +27,43 @@ function findChrome() {
     return process.env.CHROME_PATH;
   }
 
-  // 2. よく使われるコマンド名
+  // 2. Windows 専用ロジック
+  if (process.platform === 'win32') {
+    // 2-1. where chrome コマンド（Windows 版 which）
+    try {
+      const p = execSync('where chrome 2>nul', { encoding: 'utf8' }).trim().split('\n')[0].trim();
+      if (p && existsSync(p)) return p;
+    } catch {}
+
+    // 2-2. 既定インストールパス
+    const chromeName = join('Google', 'Chrome', 'Application', 'chrome.exe');
+    for (const base of [
+      process.env.ProgramFiles,
+      process.env['ProgramFiles(x86)'],
+      process.env.LOCALAPPDATA,
+    ]) {
+      if (!base) continue;
+      const p = join(base, chromeName);
+      if (existsSync(p)) return p;
+    }
+
+    // 2-3. puppeteer キャッシュ（Windows 向け）
+    const home = process.env.USERPROFILE || '';
+    const cacheDir = join(home, '.cache', 'puppeteer', 'chrome');
+    if (existsSync(cacheDir)) {
+      try {
+        const result = execSync(
+          `dir /b /s "${join(cacheDir, 'chrome-win64', 'chrome.exe')}" 2>nul`,
+          { encoding: 'utf8' },
+        ).trim().split('\n')[0].trim();
+        if (result && existsSync(result)) return result;
+      } catch {}
+    }
+
+    return null;
+  }
+
+  // 3. Unix/macOS: よく使われるコマンド名
   for (const cmd of ['chromium-browser', 'chromium', 'google-chrome', 'google-chrome-stable']) {
     try {
       const p = execSync(`which ${cmd} 2>/dev/null`, { encoding: 'utf8' }).trim();
@@ -35,7 +71,7 @@ function findChrome() {
     } catch {}
   }
 
-  // 3. puppeteer キャッシュ内を検索
+  // 4. puppeteer キャッシュ内を検索（Unix/macOS）
   const home = process.env.HOME || process.env.USERPROFILE || '';
   const cacheDir = join(home, '.cache', 'puppeteer', 'chrome');
   if (existsSync(cacheDir)) {
@@ -48,7 +84,7 @@ function findChrome() {
     } catch {}
   }
 
-  // 4. macOS 固有パス
+  // 5. macOS 固有パス
   for (const p of [
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     '/Applications/Chromium.app/Contents/MacOS/Chromium',
