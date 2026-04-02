@@ -138,6 +138,7 @@ description: |-
 - **ci-stable-log-testing**：CI環境での安定したログ取得とテスト実行を支援するスキル。CI環境でよくある失敗パターンと対処法を提供する。
 - **create-issue**：GitHubリポジトリにIssueを作成するスキル。
 - **notion-pdf**：NotionページをPDFファイルに変換するスキル。
+- **pytest-marks**：pytestのマーク付けに関するスキル。テストの実行環境や制約に基づいてマークを設計し、pyproject.tomlへの登録方法、テストコードへのマーク付与方法を解説する。
 
 ---
 
