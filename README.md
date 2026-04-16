@@ -139,6 +139,23 @@ description: |-
 - **create-issue**：GitHubリポジトリにIssueを作成するスキル。
 - **notion-pdf**：NotionページをPDFファイルに変換するスキル。
 - **pytest-marks**：pytestのマーク付けに関するスキル。テストの実行環境や制約に基づいてマークを設計し、pyproject.tomlへの登録方法、テストコードへのマーク付与方法を解説する。
+- **kiro-debug**：デバッグに関するワークフローを支援するスキル。
+- **kiro-discovery**：要件や実装対象の探索を支援するスキル。
+- **kiro-impl**：実装作業の実行を支援するスキル。
+- **kiro-review**：レビュー作業を支援するスキル。
+- **kiro-spec-batch**：仕様作成のバッチ実行を支援するスキル。
+- **kiro-spec-design**：設計仕様の作成を支援するスキル。
+- **kiro-spec-init**：仕様策定の初期化を支援するスキル。
+- **kiro-spec-quick**：軽量かつ迅速な仕様作成を支援するスキル。
+- **kiro-spec-requirements**：要求仕様の整理と定義を支援するスキル。
+- **kiro-spec-status**：仕様関連タスクの進捗確認を支援するスキル。
+- **kiro-spec-tasks**：仕様に基づくタスク分解を支援するスキル。
+- **kiro-steering**：開発方針の誘導と整合を支援するスキル。
+- **kiro-steering-custom**：カスタム方針に基づく誘導を支援するスキル。
+- **kiro-validate-design**：設計の妥当性検証を支援するスキル。
+- **kiro-validate-gap**：仕様と実装のギャップ分析を支援するスキル。
+- **kiro-validate-impl**：実装内容の検証を支援するスキル。
+- **kiro-verify-completion**：完了判定と最終確認を支援するスキル。
 
 ---
 
@@ -165,6 +182,7 @@ PRを歓迎します。最低限、以下を守ってください。
 
 - Apache License 2.0
 - 各スキルに独自の LICENSE.txt/NOTICE.md がある場合はそちらを優先
+- kiro系スキル（kiro-debug, kiro-discovery, kiro-impl, kiro-review, kiro-spec-batch, kiro-spec-design, kiro-spec-init, kiro-spec-quick, kiro-spec-requirements, kiro-spec-status, kiro-spec-tasks, kiro-steering, kiro-steering-custom, kiro-validate-design, kiro-validate-gap, kiro-validate-impl, kiro-verify-completion）は MIT License（Copyright (c) 2025 gotalab）に準拠
 
 ---
 
