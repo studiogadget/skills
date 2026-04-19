@@ -52,6 +52,17 @@ After all parallel research completes, synthesize implementation brief before st
 
 **Establish repo baseline**:
 - Run `git status --porcelain` and note any pre-existing uncommitted changes
+- Classify each uncommitted path as **task-related** or **temporary/generated** using the Temporary File Policy below
+- Temporary files in the baseline do not block execution
+
+**Temporary File Policy**:
+Read `config/temp-file-patterns.md` from this skill's directory and store the full pattern list as `TEMP_PATTERNS`.
+Project-specific additions can be appended to that file.
+
+When unexpected diffs appear during execution:
+1. Run `git status --porcelain` and compare with the recorded baseline
+2. If new files match a pattern in `TEMP_PATTERNS` → **ignore and continue** (do not stage, do not stop)
+3. If new files are NOT in `TEMP_PATTERNS` → stop and report to the user for triage
 
 ## Step 2: Select Tasks & Determine Mode
 
@@ -103,6 +114,7 @@ If multi-agent capability is available, for each task (one at a time):
   - The task description and relevant spec section numbers
   - Paths to spec files (requirements.md, design.md) so the reviewer can read them directly
   - The implementer's status report (for reference only — reviewer must verify independently)
+  - The `TEMP_PATTERNS` list loaded from `config/temp-file-patterns.md` (so the reviewer excludes matching files from boundary checks)
 - The reviewer must apply the `kiro-review` protocol to this task-local review.
 - Preserve the existing task-specific context: task text, spec refs, `_Boundary:_` scope, validation commands, implementer report, and the actual `git diff` as the primary source of truth.
 - The reviewer sub-agent will run `git diff` itself to read the actual code changes and verify against the spec
@@ -118,8 +130,9 @@ If multi-agent capability is available, for each task (one at a time):
 **e) Commit** (parent-only, selective staging):
 - Stage only the files actually changed for this task, plus tasks.md
 - **NEVER** use `git add -A` or `git add .`
+- **NEVER** stage temporary/generated files (see Temporary File Policy in Preflight)
 - Use `git add <file1> <file2> ...` with explicit file paths
-- Commit message format: `feat(<feature-name>): <task description>`
+- Commit message format: `feat(<feature-name>): [<task-id>] <task description>`
 
 **f) Record learnings**:
 - If this task revealed cross-cutting insights, append a one-line note to the `## Implementation Notes` section at the bottom of tasks.md

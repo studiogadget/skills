@@ -47,7 +47,8 @@ Evaluate each item. If ANY item fails, the verdict is REJECTED.
 
 **4. Boundary Respect**
 - Run: `git diff --name-only` and compare against the task's `_Boundary:_` scope.
-- If files outside boundary are changed → REJECTED.
+- Exclude files whose paths match any pattern in the `TEMP_PATTERNS` list passed by the controller (sourced from `config/temp-file-patterns.md`).
+- If non-temporary files outside boundary are changed → REJECTED.
 
 **5. RED Phase Evidence**
 - Check the implementer's status report for `RED_PHASE_OUTPUT`.
