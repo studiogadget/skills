@@ -156,6 +156,8 @@ description: |-
 - **kiro-validate-gap**：仕様と実装のギャップ分析を支援するスキル。
 - **kiro-validate-impl**：実装内容の検証を支援するスキル。
 - **kiro-verify-completion**：完了判定と最終確認を支援するスキル。
+- **cc-sdd-review-slice-stack**：cc-sddのレビュー用PR作成に特化したスキル。スライススタックの品質と整合性を評価するためのチェックリストとガイドラインを提供する。
+- **cc-sdd-restack-after-merge**：cc-sddのマージ後の再スタック作業を支援するスキル。マージ後の整合性確認と再スタック手順を提供する。
 
 ---
 
