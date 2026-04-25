@@ -158,6 +158,7 @@ description: |-
 - **kiro-verify-completion**：完了判定と最終確認を支援するスキル。
 - **cc-sdd-review-slice-stack**：cc-sddのレビュー用PR作成に特化したスキル。スライススタックの品質と整合性を評価するためのチェックリストとガイドラインを提供する。
 - **cc-sdd-restack-after-merge**：cc-sddのマージ後の再スタック作業を支援するスキル。マージ後の整合性確認と再スタック手順を提供する。
+- **pr-creator**：Git運用規則に準拠したドラフトPRを作成するスキル。差分分析→本文生成→gh pr create --draft の3ステップで進める。
 
 ---
 
