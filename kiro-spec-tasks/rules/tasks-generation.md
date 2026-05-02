@@ -182,31 +182,31 @@ Before writing `tasks.md`, review the draft task plan and repair local issues un
 ### Checkbox Format
 ```markdown
 - [ ] 1. Foundation: environment and test infrastructure setup
-- [ ] 1.1 Sub-task description
-  - Detail item 1
-  - Detail item 2
-  - Observable completion condition
-  - _Requirements: X.X_
+  - [ ] 1.1 Sub-task description
+    - Detail item 1
+    - Detail item 2
+    - Observable completion condition
+    - _Requirements: X.X_
 
 - [ ] 2. Core feature A
-- [ ] 2.1 (P) Sub-task description
-  - Detail items...
-  - Observable completion condition
-  - _Requirements: Y.Y_
-  - _Boundary: AuthService_
+  - [ ] 2.1 (P) Sub-task description
+    - Detail items...
+    - Observable completion condition
+    - _Requirements: Y.Y_
+    - _Boundary: AuthService_
 
-- [ ] 2.2 (P) Sub-task description
-  - Detail items...
-  - Observable completion condition
-  - _Requirements: Z.Z_
-  - _Boundary: UserRepository_
+  - [ ] 2.2 (P) Sub-task description
+    - Detail items...
+    - Observable completion condition
+    - _Requirements: Z.Z_
+    - _Boundary: UserRepository_
 
 - [ ] 3. Integration and wiring
-- [ ] 3.1 Sub-task description
-  - Detail items...
-  - Observable completion condition
-  - _Depends: 2.1, 2.2_
-  - _Requirements: W.W_
+  - [ ] 3.1 Sub-task description
+    - Detail items...
+    - Observable completion condition
+    - _Depends: 2.1, 2.2_
+    - _Requirements: W.W_
 ```
 
 ## Requirements Coverage
