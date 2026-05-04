@@ -1,31 +1,42 @@
 ---
 name: hibernate-pc
-description: "Put PC into hibernation after agent work completes. Use when: long-running tasks finish unattended, want PC to sleep after build/test/deploy. Windows only. Manual activation required."
-user-invocable: true
-disable-model-invocation: true
+description: "タスク完了後にPCを休止状態にする。Use when: ユーザーが「休止」「hibernate」「タスク完了後に休止状態」「作業後にPCをスリープ/休止」と明示的に指示した場合のみ。Windows only."
 ---
 
 # Hibernate PC After Work
 
 ## When to Use
 
-- 長時間タスク（ビルド、テスト、デプロイ等）の完了後にPCを休止状態にしたいとき
-- 手動で `/hibernate-pc` を呼び出したときのみ実行される
+ユーザーが以下のような明示的な指示をした場合**のみ**このスキルを適用する:
+
+- 「タスク完了後にPCを休止状態にする」
+- 「作業が終わったら休止して」
+- 「終わったらhibernateして」
+
+## Activation Conditions（全て満たすこと）
+
+1. ユーザーが**現在の会話内で**休止状態を明示的に要求している
+2. 依頼されたタスクが**全て正常に完了**している
+3. エラーや未解決の問題が**ゼロ**である
+
+**以下の場合は絶対に実行しない:**
+- ユーザーが休止を明示的に指示していない
+- タスクが失敗またはエラーで終了した
+- 確認が必要な未解決事項がある
 
 ## Procedure
 
-1. 現在進行中のタスクをすべて完了させる
-2. 全作業が正常終了したことを確認する
-3. ユーザーに作業完了サマリーを表示する
+1. 依頼されたタスクを全て完了させる
+2. 全作業の結果サマリーを表示する
+3. Activation Conditionsを全て満たしていることを確認する
 4. 以下のコマンドでPCを休止状態にする:
 
 ```powershell
 shutdown /h
 ```
 
-## Important Notes
+## Safety Rules
 
-- このスキルは `disable-model-invocation: true` により、明示的に呼び出さない限り実行されない
-- 休止状態コマンドは作業の**最後のステップ**として実行すること
-- エラーが発生した場合は休止状態にせず、ユーザーに報告すること
-- 休止状態実行前に未保存の変更がないことを確認すること
+- 休止コマンドは必ず作業の**最終ステップ**として実行する
+- エラー発生時は休止せずユーザーに報告する
+- 「休止」という単語が会話に出ていても、それがPC休止の指示でない場合は実行しない
