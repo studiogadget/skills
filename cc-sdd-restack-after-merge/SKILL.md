@@ -1,6 +1,6 @@
 ---
 name: cc-sdd-restack-after-merge
-description: stacked PRの下位PRがマージされた後に上位branchをrestack（rebase/cherry-pick再構成）する際に使用。「restackして」「上位PRを更新して」「restack after merge」「PRのbaseを更新」「スタックを整理」という依頼でトリガーする。restack→push→PR base更新→軽量検証→auto-merge設定の流れで進める。
+description: stacked PRの下位PRがマージされた後に上位branchをrestack（rebase/cherry-pick再構成）する際に使用。「restackして」「上位PRを更新して」「restack after merge」「PRのbaseを更新」「スタックを整理」という依頼でトリガーする。対象sliceの特定→rebase→変更ファイル確認と代表テスト実行→force-with-leaseでpush→PR base更新→auto-merge判定の順で進める。
 ---
 
 # cc-sdd Restack After Merge
@@ -52,6 +52,13 @@ $openPRs = gh pr list --json number,headRefName,baseRefName,state --jq '.[] | se
 # slice 02 の新しい base は review trunk（slice 01 のコミットがマージ済み）
 ```
 
+| 条件 | 対象にする slice | 新しい base | 次の動作 |
+|---|---|---|---|
+| 最下位の未マージ slice の直下がマージ済み | その slice | review trunk | rebase を実行 |
+| 直下の slice が未マージ | なし | 変更なし | その slice はスキップ |
+| 複数 slice が連続でマージ済み | 連続区間の直上にある最初の未マージ slice | review trunk | その 1 つだけ rebase してから上位へ連鎖更新 |
+| すべてマージ済み | なし | なし | 統合 PR の状態確認へ進む |
+
 ### restack 順序
 
 - bottom から順に処理する
@@ -78,9 +85,10 @@ git rebase "origin/review/<impl_branch>/trunk"
 
 rebase 後に以下を実行する。
 
-- 変更ファイル一覧の確認
-- 代表テスト（`make test` 等）の実行
-- 失敗時は push せず停止
+- `git diff --name-only origin/<rebase前のbase>...HEAD` で変更ファイル一覧を確認
+- 変更範囲に対応する代表テストを 1 つ以上実行する
+- テスト候補が複数ある場合は、変更ファイルに最も近い unit test を優先し、候補がなければ関連 integration test か `make check-all` を実行する
+- 検証に失敗した場合は push せず停止し、失敗したコマンドと要約だけを報告する
 
 ## Step 5: push と PR base 更新
 
