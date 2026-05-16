@@ -204,7 +204,16 @@ git checkout -b "review/${implBranch}/02-<slice-key>"
 git cherry-pick <commit3> ...
 ```
 
-**conflict 発生時は停止する。軽微か不明確かを問わず、勝手に解決して先へ進まない。**
+**conflict 発生時は、解決方法が明確な場合に限り解消して継続する。** 片側の変更を採用すれば整合する場合、rename 追従のみの場合、generated file の再生成で整合する場合など、判断根拠を説明できるケースに限る。
+
+- conflict を解消したら `git add <file>` の後に `git cherry-pick --continue` で継続する
+- conflict を解消して進めた場合は、対象ファイル・採用した解決内容・判断根拠を Step 7 で必ず報告する
+
+**解決方針が不明確な場合のみ停止する。** 停止時は以下を報告して手動解決を求める。
+
+- conflict のあるファイル一覧（`git diff --name-only --diff-filter=U`）
+- conflict 内容の要約
+- 提示可能な解決方法と判断根拠
 
 ### 6.4 軽量検証
 
@@ -283,6 +292,7 @@ gh pr create --draft `
 - 現在ブランチ名（変更なし）
 - review trunk branch 名（新規作成）
 - 作成した slice branches
+- conflict を解消して進めた slice があれば、その解決内容（対象ファイル / 採用した変更 / 判断根拠）
 - 作成した draft PR URL（slice + 統合）
 - レビュー順（bottom → top、最後に統合 PR）
 - unresolved / ambiguous commit 一覧（残っていれば）
@@ -303,3 +313,4 @@ gh pr create --draft `
 - task ID が曖昧な commit を勝手に slice に振り分けること
 - pushed branch に対して無断で history rewrite すること
 - confidence が low のまま apply に進むこと
+- 解決方針が不明確な conflict を推測で解決して進めること

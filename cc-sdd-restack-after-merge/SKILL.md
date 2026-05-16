@@ -76,10 +76,15 @@ git checkout "review/<impl_branch>/02-<slice-key>"
 git rebase "origin/review/<impl_branch>/trunk"
 ```
 
-**conflict 発生時は停止する。** 以下を報告して手動解決を求める。
-- conflict のあるファイル一覧
-- conflict の内容（`git diff --name-only --diff-filter=U`）
-- 推奨する解決方法
+**conflict 発生時は、解決方法が明確な場合に限り解消して継続する。** 片側の変更を採用すれば整合する場合、rename 追従のみの場合、generated file の再生成で整合する場合など、判断根拠を説明できるケースに限る。
+
+- conflict を解消したら `git add <file>` の後に `git rebase --continue` で継続する
+- conflict を解消して進めた場合は、対象ファイル・採用した解決内容・判断根拠を Step 7 で必ず報告する
+
+**解決方針が不明確な場合のみ停止する。** 停止時は以下を報告して手動解決を求める。
+- conflict のあるファイル一覧（`git diff --name-only --diff-filter=U`）
+- conflict 内容の要約
+- 提示可能な解決方法と判断根拠
 
 ## Step 4: 軽量検証
 
@@ -149,7 +154,8 @@ gh pr merge <pr-number> --auto --squash
 以下を一覧で出力する。
 
 - restack した slice branch 一覧
-- 各 branch の rebase 結果（成功 / conflict）
+- 各 branch の rebase 結果（成功 / conflict 解消 / 停止）
+- conflict を解消して進めた場合の解決内容（対象ファイル / 採用した変更 / 判断根拠）
 - 更新した PR の base 変更内容
 - auto-merge 設定結果（設定済み / 条件未達の理由）
 - 残りの未マージ slice 一覧
@@ -172,7 +178,7 @@ gh pr ready <integration-pr-number>
 ## 禁止事項
 
 - 現在ブランチ（`$implBranch`）の履歴を変更すること
-- conflict を勝手に解決すること
+- 解決方針が不明確な conflict を推測で解決して進めること
 - `--force-with-lease` なしで force push すること
 - auto-merge 条件を満たさない PR に auto-merge を設定すること
 - レビュー未承認の PR を ready にすること
